@@ -76,49 +76,50 @@ export default function CreateStash() {
 
   return (
     <div className="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center">
-      <div className="max-w-lg w-full p-6 bg-gray-800 rounded-lg shadow-lg">
-        <h1 className="text-4xl mb-4 text-center">Create or Select a Stash</h1>
-
-        {error && <h1 className="text-red-500 mb-4">{error}</h1>}
-
-        <div className="mb-6">
-          <Input
-            clearable
-            underlined
-            placeholder="Enter stash name"
-            value={stashName}
-            onChange={(e) => setStashName(e.target.value)}
-            aria-label="Stash Name"
-            className="mb-4"
-          />
-          <Button
-            onClick={handleCreateStash}
-            color="primary"
-            auto
-            className="w-full"
-            disabled={loading}
+    <div className="max-w-lg w-full p-6 bg-gray-800 rounded-lg shadow-lg overflow-visible">
+      <h1 className="text-4xl mb-4 text-center">Create or Select a Stash</h1>
+  
+      {error && <h1 className="text-red-500 mb-4">{error}</h1>}
+  
+      <div className="mb-6">
+        <Input
+          clearable
+          underlined
+          placeholder="Enter stash name"
+          value={stashName}
+          onChange={(e) => setStashName(e.target.value)}
+          aria-label="Stash Name"
+          className="mb-4"
+        />
+        <Button
+          onClick={handleCreateStash}
+          color="primary"
+          auto
+          className="w-full"
+          disabled={loading}
+        >
+          {loading ? "Creating..." : "Create Stash"}
+        </Button>
+      </div>
+      <Divider />
+      <h2 className="text-2xl mb-4 text-center">Your Existing Stashes</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {stashesData.map((stash) => (
+          <Card
+            key={stash.id}
+            isHoverable
+            isPressable
+            onClick={() => handleStashClick(stash.id)}
+            className="cursor-pointer w-full"
           >
-            {loading ? "Creating..." : "Create Stash"}
-          </Button>
-        </div>
-        <Divider />
-        <h2 className="text-2xl mb-4 text-center">Your Existing Stashes</h2>
-        <ul className="list-disc list-inside space-y-2">
-          {stashesData.map((stash) => (
-            <Card
-              key={stash.id}
-              isHoverable
-              isPressable
-              onClick={() => handleStashClick(stash.id)}
-              className="cursor-pointer"
-            >
-              <CardBody className="w-[450px]">
-                <p className="text-black">{stash.title}</p>
-              </CardBody>
-            </Card>
-          ))}
-        </ul>
+            <CardBody className="p-4">
+              <p className="text-black">{stash.title}</p>
+            </CardBody>
+          </Card>
+        ))}
       </div>
     </div>
+  </div>
+  
   );
 }
