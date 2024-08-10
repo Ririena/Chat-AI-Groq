@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useRef } from "react";
 import { supabase } from "../libs/supabase";
+import { useNavigate } from "react-router-dom";
 import { requestToRinaAI } from "../utils/groq";
 import {
   Button,
@@ -12,8 +14,11 @@ import {
 import { HiMenu } from "react-icons/hi";
 import { IoClose } from "react-icons/io5";
 import { MdContentCopy, MdRefresh } from "react-icons/md";
+import { useParams } from "react-router-dom";
 
-export default function Home() {
+export default function Chat() {
+  const isMounted = useRef(true);
+  const { stashId } = useParams();
   const [content, setContent] = useState("");
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -22,13 +27,96 @@ export default function Home() {
   const [selectedHistory, setSelectedHistory] = useState(null);
   const [isSidebarVisible, setSidebarVisible] = useState(false);
   const [savedTitle, setSavedTitle] = useState("");
+  const [stashes, setStashes] = useState([]);
+  const [currentStashId, setCurrentStashId] = useState(stashId);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const fetchStashes = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const { data, error } = await supabase.from("stashes").select("*");
+
+        if (error) throw error;
+
+        if (isMounted.current) {
+          setStashes(data || []);
+        }
+      } catch (err) {
+        if (isMounted.current) {
+          setError(`An error occurred while fetching stashes: ${err.message}`);
+        }
+      } finally {
+        if (isMounted.current) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchStashes();
+  }, []);
+
+  if (loading) {
+    <h1>Loading</h1>;
+  }
+
   useEffect(() => {
     if (selectedHistory) {
       setContent(selectedHistory.message);
     }
   }, [selectedHistory]);
 
+  useEffect(() => {
+    if (!stashId || stashes.length === 0) return;
+
+    const fetchResponses = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const { data, error } = await supabase
+          .from("responses")
+          .select("*")
+          .eq("stashId", stashId)
+          .order("created_at", { ascending: true });
+
+        if (error) throw error;
+
+        if (isMounted.current) {
+          setResponses(data || []);
+        }
+      } catch (err) {
+        if (isMounted.current) {
+          setError(
+            `An error occurred while fetching responses: ${err.message}`
+          );
+        }
+      } finally {
+        if (isMounted.current) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchResponses();
+  }, [stashId, stashes]);
+
+  useEffect(() => {
+    if (error) {
+      // Refresh the page after a short delay to allow the user to see the error message
+      const timer = setTimeout(() => {
+        window.location.reload();
+      }, 500); // Adjust the delay as needed
+
+      return () => clearTimeout(timer); // Cleanup timer on component unmount or when error changes
+    }
+  }, [error]);
+
   const handleSubmit = async () => {
+    if (!stashId) {
+      setError("Stash ID is missing.");
+      return;
+    }
+
     if (content.trim()) {
       setLoading(true);
       setError("");
@@ -36,14 +124,17 @@ export default function Home() {
         const { aiResponse, usage } = await requestToRinaAI(content);
 
         if (aiResponse) {
-          const newResponse = { message: content, aiResponse, usage };
+          const newResponse = { stashId, message: content, aiResponse, usage };
 
           setResponses((prevResponses) => [...prevResponses, newResponse]);
-          const { error } = await supabase
-          .from("saved_history")
-          .insert([
-            { saved_title: content,}
-          ]);
+
+          const { error: saveError } = await supabase
+            .from("responses")
+            .insert([newResponse]);
+
+          if (saveError) {
+            throw new Error("Failed to save the response to the database.");
+          }
 
           setContent("");
         } else {
@@ -62,14 +153,26 @@ export default function Home() {
 
   const handleRegenerate = async (index) => {
     if (responses[index]) {
-      const { message } = responses[index];
+      const { id, message } = responses[index];
       setLoading(true);
       setError("");
       try {
         const { aiResponse, usage } = await requestToRinaAI(message);
-        const updatedResponse = { message, aiResponse, usage };
+        const updatedResponse = { aiResponse, usage };
+
+        // Update the specific response in Supabase
+        const { error: updateError } = await supabase
+          .from("responses")
+          .update(updatedResponse)
+          .match({ id });
+
+        if (updateError) {
+          throw new Error("Failed to update the response in the database.");
+        }
+
+        // Update the response in local state
         const newResponses = [...responses];
-        newResponses[index] = updatedResponse; // Update the specific index
+        newResponses[index] = { ...newResponses[index], ...updatedResponse };
         setResponses(newResponses);
       } catch (err) {
         console.error("Regenerate error:", err);
@@ -93,6 +196,10 @@ export default function Home() {
     setSidebarVisible(!isSidebarVisible);
   };
 
+  const handleStashClick = (id) => {
+    navigate(`/${id}`); // Adjust this path according to your routing setup
+  };
+
   return (
     <div className="flex h-screen bg-gray-900 text-gray-100 relative">
       <div className="fixed top-4 left-4 z-30">
@@ -110,9 +217,7 @@ export default function Home() {
         } md:translate-x-0 md:relative max-w-full w-[300px] z-30`}
       >
         <div className="flex justify-between">
-          <h2 className="text-2xl font-bold mb-4 text-gray-100">
-            Chat History
-          </h2>
+          <h2 className="text-2xl font-bold mb-4 text-gray-100">Stashes</h2>
           {isSidebarVisible ? (
             <Button isIconOnly onClick={toggleSidebar}>
               <IoClose />
@@ -122,6 +227,22 @@ export default function Home() {
           )}
         </div>
 
+        <div className="space-y-2">
+          {stashes.map((stash) => (
+            <Card
+              key={stash.id}
+              variant="bordered"
+              className={`bg-gray-700 border-gray-600 cursor-pointer hover:bg-gray-600 ${
+                stash.id === currentStashId ? "bg-gray-600" : ""
+              }`}
+              onClick={() => handleStashClick(stash.id)}
+            >
+              <CardBody onClick={() => handleStashClick(stash.id)}>
+                <p className="font-bold text-gray-300">{stash.title}</p>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
         <div className="space-y-2">
           {history.map((entry, index) => (
             <Card
