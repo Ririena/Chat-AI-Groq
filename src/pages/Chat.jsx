@@ -15,7 +15,7 @@ import { HiMenu } from "react-icons/hi";
 import { IoClose } from "react-icons/io5";
 import { MdContentCopy, MdRefresh } from "react-icons/md";
 import { useParams } from "react-router-dom";
-
+import { getUserByEmail, getUserFromTable } from "../libs/UserLibs";
 export default function Chat() {
   const isMounted = useRef(true);
   const { stashId } = useParams();
@@ -35,7 +35,12 @@ export default function Chat() {
       setLoading(true);
       setError("");
       try {
-        const { data, error } = await supabase.from("stashes").select("*");
+        const user = await getUserByEmail();
+        const userDataFromTable = await getUserFromTable(user.email);
+        const { data, error } = await supabase
+          .from("stashes")
+          .select("*")
+          .eq("userId", userDataFromTable.id);
 
         if (error) throw error;
 
@@ -73,10 +78,13 @@ export default function Chat() {
       setLoading(true);
       setError("");
       try {
+        const user = await getUserByEmail();
+        const userDataFromTable = await getUserFromTable(user.email);
         const { data, error } = await supabase
           .from("responses")
           .select("*")
           .eq("stashId", stashId)
+          .eq("userId", userDataFromTable.id)
           .order("created_at", { ascending: true });
 
         if (error) throw error;
@@ -121,10 +129,18 @@ export default function Chat() {
       setLoading(true);
       setError("");
       try {
+        const user = await getUserByEmail();
+        const userDataFromTable = await getUserFromTable(user.email);
         const { aiResponse, usage } = await requestToRinaAI(content);
 
         if (aiResponse) {
-          const newResponse = { stashId, message: content, aiResponse, usage };
+          const newResponse = {
+            stashId,
+            message: content,
+            aiResponse,
+            usage,
+            userId: userDataFromTable.id,
+          };
 
           setResponses((prevResponses) => [...prevResponses, newResponse]);
 
@@ -197,7 +213,7 @@ export default function Chat() {
   };
 
   const handleStashClick = (id) => {
-    navigate(`/${id}`); // Adjust this path according to your routing setup
+    navigate(`/${id}`);
   };
 
   return (

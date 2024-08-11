@@ -2,3 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+.scroll-container {
+  height: 100vh; /* or any other height you need */
+  overflow: scroll; /* Allows scrolling */
+}
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari) */
+.scroll-container::-webkit-scrollbar {
+  display: none; /* Hides the scrollbar */
+}
+
+/* Hide scrollbar for IE and Edge */
+.scroll-container {
+  -ms-overflow-style: none; /* Hides the scrollbar */
+}
+
+/* Hide scrollbar for Firefox */
+.scroll-container {
+  scrollbar-width: none; /* Hides the scrollbar */
+}
