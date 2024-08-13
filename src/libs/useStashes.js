@@ -20,15 +20,17 @@ export const useStashes = () => {
           navigate("/login");
           return;
         }
-
+  
         const userDataFromTable = await getUserFromTable(user.email);
         setUserData(userDataFromTable);
-
+  
         const { data, error } = await supabase
           .from("stashes")
           .select("*")
-          .eq("userId", userDataFromTable.id);
-
+          .eq("userId", userDataFromTable.id)
+          .order("created_at", { ascending: false }) // Fetch the 3 most recent stashes
+          .limit(3);
+  
         if (error) {
           throw new Error(error.message);
         }
@@ -36,14 +38,15 @@ export const useStashes = () => {
         setError("");
       } catch (error) {
         console.error("Error fetching data:", error.message);
-        setError("Failed to fetch data. Please try again.");
+        setError("Failed to fetch data, Data Belum Ada.");
       } finally {
         setFetching(false);
       }
     };
-
+  
     fetchUserData();
   }, [navigate]);
+  
 
   const handleCreateStash = async () => {
     if (stashName.trim()) {

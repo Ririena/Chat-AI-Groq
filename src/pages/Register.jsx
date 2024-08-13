@@ -11,26 +11,25 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../libs/supabase";
 
-export default function Login() {
+export default function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     email: "",
     password: "",
+    confirmPassword: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({
     email: "",
     password: "",
+    confirmPassword: "",
   });
-
-  const handleRegister = () => {
-    navigate("/register");
-  };
 
   async function handleSubmit(e) {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Validation
     if (!form.email) {
       setErrors((prevErrors) => ({
         ...prevErrors,
@@ -49,39 +48,27 @@ export default function Login() {
       return;
     }
 
+    if (form.password !== form.confirmPassword) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        confirmPassword: "Password tidak cocok",
+      }));
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
       });
 
       if (error) {
         console.log(error);
-        alert("Login failed");
+        alert("Registration failed");
       } else {
-        // Check if the user exists in the 'user' table
-        const { data: userData, error: userError } = await supabase
-          .from("user")
-          .select("*")
-          .eq("email", form.email)
-          .single();
-
-        if (userError) {
-          console.log(userError);
-        } else if (!userData) {
-          // User does not exist, insert them
-          const { error: insertError } = await supabase
-            .from("user")
-            .insert([{ email: form.email }]);
-
-          if (insertError) {
-            console.log(insertError);
-            alert("Failed to create user in the database");
-          }
-        }
-
-        alert("Sukses");
-        navigate("/");
+        alert("Registration successful! Please check your email to confirm.");
+        navigate("/login");
       }
     } catch (error) {
       console.log(error);
@@ -112,7 +99,7 @@ export default function Login() {
       >
         <Card className="bg-gray-800">
           <CardHeader className="text-center">
-            <h1 className="text-3xl font-bold text-white">Login</h1>
+            <h1 className="text-3xl font-bold text-white">Register</h1>
           </CardHeader>
           <Divider />
           <CardBody>
@@ -149,12 +136,24 @@ export default function Login() {
                   <p className="text-red-500 text-sm mt-2">{errors.password}</p>
                 )}
               </div>
-              <div onClick={handleRegister}>
-                <h1 className="text-white mb-6 cursor-pointer">
-                  Didn't Register Yet?
-                </h1>
+              <div className="mb-6">
+                <Input
+                  clearable
+                  underlined
+                  fullWidth
+                  placeholder="Confirm Your Password"
+                  name="confirmPassword"
+                  type="password"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  color={errors.confirmPassword ? "error" : "primary"}
+                />
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {errors.confirmPassword}
+                  </p>
+                )}
               </div>
-
               <Button
                 type="submit"
                 color="primary"
@@ -162,7 +161,7 @@ export default function Login() {
                 className="w-full"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Logging in..." : "Login"}
+                {isSubmitting ? "Registering..." : "Register"}
               </Button>
             </form>
           </CardBody>

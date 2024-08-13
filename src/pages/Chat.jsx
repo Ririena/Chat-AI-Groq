@@ -16,6 +16,7 @@ import { IoClose } from "react-icons/io5";
 import { MdContentCopy, MdRefresh } from "react-icons/md";
 import { useParams } from "react-router-dom";
 import { getUserByEmail, getUserFromTable } from "../libs/UserLibs";
+import { MdDelete } from "react-icons/md";
 export default function Chat() {
   const isMounted = useRef(true);
   const { stashId } = useParams();
@@ -107,6 +108,25 @@ export default function Chat() {
 
     fetchResponses();
   }, [stashId, stashes]);
+
+  const handleDeleteStash = async (stashId) => {
+    try {
+      const { error } = await supabase
+        .from("stashes")
+        .delete()
+        .eq("id", stashId);
+
+      if (error) {
+        throw new Error("Failed to delete the stash.");
+      }
+
+      setStashes((prevStashes) =>
+        prevStashes.filter((stash) => stash.id !== stashId)
+      );
+    } catch (err) {
+      setError(`An error occurred while deleting the stash: ${err.message}`);
+    }
+  };
 
   useEffect(() => {
     if (error) {
@@ -216,6 +236,29 @@ export default function Chat() {
     navigate(`/${id}`);
   };
 
+  const handleDeleteResponse = async (index) => {
+    if (responses[index]) {
+      const { id } = responses[index];
+      try {
+        const { error } = await supabase
+          .from("responses")
+          .delete()
+          .eq("id", id);
+
+        if (error) {
+          throw new Error("Failed to delete the response.");
+        }
+
+        const newResponses = [...responses];
+        newResponses.splice(index, 1);
+        setResponses(newResponses);
+      } catch (err) {
+        console.error("Delete error:", err);
+        setError("An error occurred while deleting the response.");
+      }
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-900 text-gray-100 relative">
       <div className="fixed top-4 left-4 z-30">
@@ -254,7 +297,18 @@ export default function Chat() {
               onClick={() => handleStashClick(stash.id)}
             >
               <CardBody onClick={() => handleStashClick(stash.id)}>
-                <p className="font-bold text-gray-300">{stash.title}</p>
+                <div className="flex justify-between">
+                  <p className="font-bold text-gray-300">{stash.title}</p>
+                  <IoClose
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteStash(stash.id);
+                    }}
+                    className="cursor-pointer hover:bg-red-600 active:bg-red-700"
+                    size={"2em"}
+                    color="white"
+                  />
+                </div>
               </CardBody>
             </Card>
           ))}
@@ -351,6 +405,13 @@ export default function Chat() {
                               onClick={() => handleRegenerate(index)}
                             >
                               <MdRefresh color="white" size={"2em"} />
+                            </Button>
+                            <Button
+                              isIconOnly
+                              className="bg-gray-700 border-gray-600 cursor-pointer hover:bg-gray-600 rounded-sm"
+                              onClick={() => handleDeleteResponse(index)}
+                            >
+                              <MdDelete color="white" size={"2em"} />
                             </Button>
                           </div>
                         </div>

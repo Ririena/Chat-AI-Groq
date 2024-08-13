@@ -7,6 +7,7 @@ import { Routes, Route } from "react-router-dom";
 import CreateStash from "./pages/CreateStash";
 import Chat from "./pages/Chat";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 function App() {
   return (
     <>
@@ -17,6 +18,7 @@ function App() {
             <Route path="chat" element={<Home />} />
             <Route path=":stashId" element={<Chat />} />
             <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register/>}/>
           </Route>
         </Routes>
       </div>
