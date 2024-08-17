@@ -75,9 +75,9 @@ export default function Register() {
           progress: undefined,
           theme: "dark",
           transition: Bounce,
-          });
+        });
       } else {
-        toast.success('Register Succesfull, Redirecting', {
+        toast.success("Register Succesfull, Redirecting", {
           position: "top-right",
           autoClose: 5000,
           hideProgressBar: false,
@@ -87,7 +87,7 @@ export default function Register() {
           progress: undefined,
           theme: "dark",
           transition: Bounce,
-          });
+        });
         navigate("/login");
       }
     } catch (error) {
@@ -110,93 +110,109 @@ export default function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-md w-full p-6  rounded-lg "
-      >
-        <Card className="bg-gray-800 rounded-lg shadow-lg p-6">
-          <CardHeader className="text-center mb-4">
-            <h1 className="text-3xl font-bold text-white">Register</h1>
-          </CardHeader>
-          <Divider className="mb-3 bg-gray-400" />
+    <>
+        <Helmet>
+        <title>Rina AI, Register</title>
+        <link rel="canonical" href="https://rina-ai.vercel.app/register" />
+        <meta
+          name="description"
+          content="Rina AI Register "
+        />
+        <meta
+          name="keywords"
+          content="Rina AI, Rina AI register, Rina AI Register, AI rina register, login register ai, Vercel App, vercel app, Rina AI vercel app, rina ai, rina ai 2, rina ai adlin, rina ai ariena, SMKN 7 Baleendah, rina ai smkn 7 baleendah, AI Rina vercel app, ai rina, "
+        />
+      </Helmet>
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-md w-full p-6  rounded-lg "
+        >
+          <Card className="bg-gray-800 rounded-lg shadow-lg p-6">
+            <CardHeader className="text-center mb-4">
+              <h1 className="text-3xl font-bold text-white">Register</h1>
+            </CardHeader>
+            <Divider className="mb-3 bg-gray-400" />
 
-          <CardBody>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-6">
-                <Input
-                  clearable
-                  underlined
-                  fullWidth
-                  placeholder="Enter Your Email"
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  color={errors.email ? "error" : "primary"}
-                  className="text-white bg-gray-700"
-                />
-                {errors.email && (
-                  <p className="text-red-500 text-sm mt-2">{errors.email}</p>
-                )}
-              </div>
-              <div className="mb-6">
-                <Input
-                  clearable
-                  underlined
-                  fullWidth
-                  placeholder="Enter Your Password"
-                  name="password"
-                  type="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  color={errors.password ? "error" : "primary"}
-                  className="text-white bg-gray-700"
-                />
-                {errors.password && (
-                  <p className="text-red-500 text-sm mt-2">{errors.password}</p>
-                )}
-              </div>
-              <div className="mb-6">
-                <Input
-                  clearable
-                  underlined
-                  fullWidth
-                  placeholder="Confirm Your Password"
-                  name="confirmPassword"
-                  type="password"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  color={errors.confirmPassword ? "error" : "primary"}
-                  className="text-white bg-gray-700"
-                />
-                {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-2">
-                    {errors.confirmPassword}
-                  </p>
-                )}
-              </div>
-              <p
-                onClick={() => navigate("/login")}
-                className="text-white cursor-pointer hover:underline text-center mb-4"
-              >
-                Already have an Account?
-              </p>
-              <Button
-                type="submit"
-                color="primary"
-                auto
-                className="w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Registering..." : "Register"}
-              </Button>
-            </form>
-          </CardBody>
-        </Card>
-      </motion.div>
-    </div>
+            <CardBody>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-6">
+                  <Input
+                    clearable
+                    underlined
+                    fullWidth
+                    placeholder="Enter Your Email"
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    color={errors.email ? "error" : "primary"}
+                    className="text-white bg-gray-700"
+                  />
+                  {errors.email && (
+                    <p className="text-red-500 text-sm mt-2">{errors.email}</p>
+                  )}
+                </div>
+                <div className="mb-6">
+                  <Input
+                    clearable
+                    underlined
+                    fullWidth
+                    placeholder="Enter Your Password"
+                    name="password"
+                    type="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    color={errors.password ? "error" : "primary"}
+                    className="text-white bg-gray-700"
+                  />
+                  {errors.password && (
+                    <p className="text-red-500 text-sm mt-2">
+                      {errors.password}
+                    </p>
+                  )}
+                </div>
+                <div className="mb-6">
+                  <Input
+                    clearable
+                    underlined
+                    fullWidth
+                    placeholder="Confirm Your Password"
+                    name="confirmPassword"
+                    type="password"
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    color={errors.confirmPassword ? "error" : "primary"}
+                    className="text-white bg-gray-700"
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-sm mt-2">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+                <p
+                  onClick={() => navigate("/login")}
+                  className="text-white cursor-pointer hover:underline text-center mb-4"
+                >
+                  Already have an Account?
+                </p>
+                <Button
+                  type="submit"
+                  color="primary"
+                  auto
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Registering..." : "Register"}
+                </Button>
+              </form>
+            </CardBody>
+          </Card>
+        </motion.div>
+      </div>
+    </>
   );
 }

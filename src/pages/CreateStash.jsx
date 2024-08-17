@@ -23,7 +23,7 @@ const CreateStash = () => {
     <>
       <Helmet>
         <title>Rina AI</title>
-        <link rel="canonical" href="https://pandu-memories-2.vercel.app/" />
+        <link rel="canonical" href="https://rina-ai.vercel.app/" />
         <meta
           name="description"
           content="Rina is AI Chat Completion That Powered By Groq And Model That Currently Open Sourced By Meta "
