@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { supabase } from "../libs/supabase";
 import { useNavigate } from "react-router-dom";
 import { requestToRinaAI } from "../utils/groq";
+import { toast, Bounce } from "react-toastify";
 import {
   Button,
   Textarea,
@@ -17,10 +18,12 @@ import { MdContentCopy, MdRefresh } from "react-icons/md";
 import { useParams } from "react-router-dom";
 import { getUserByEmail, getUserFromTable } from "../libs/UserLibs";
 import { MdDelete } from "react-icons/md";
+import { FaLongArrowAltLeft } from "react-icons/fa";
 export default function Chat() {
   const isMounted = useRef(true);
   const { stashId } = useParams();
   const [content, setContent] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -30,6 +33,7 @@ export default function Chat() {
   const [savedTitle, setSavedTitle] = useState("");
   const [stashes, setStashes] = useState([]);
   const [currentStashId, setCurrentStashId] = useState(stashId);
+
   const navigate = useNavigate();
   useEffect(() => {
     const fetchStashes = async () => {
@@ -37,6 +41,7 @@ export default function Chat() {
       setError("");
       try {
         const user = await getUserByEmail();
+        setUserEmail(user?.email);
         const userDataFromTable = await getUserFromTable(user.email);
         const { data, error } = await supabase
           .from("stashes")
@@ -123,6 +128,18 @@ export default function Chat() {
       setStashes((prevStashes) =>
         prevStashes.filter((stash) => stash.id !== stashId)
       );
+      toast.warning("Deletting", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+      });
+      navigate("/");
     } catch (err) {
       setError(`An error occurred while deleting the stash: ${err.message}`);
     }
@@ -236,29 +253,30 @@ export default function Chat() {
     navigate(`/${id}`);
   };
 
-  const handleDeleteResponse = async (index) => {
-    if (responses[index]) {
-      const { id } = responses[index];
-      try {
-        const { error } = await supabase
-          .from("responses")
-          .delete()
-          .eq("id", id);
+ const handleDeleteResponse = async (index) => {
+  try {
+    setLoading(true);
+    const { id } = responses[index];
+    const { error } = await supabase
+      .from("responses")
+      .delete()
+      .eq("id", id);
 
-        if (error) {
-          throw new Error("Failed to delete the response.");
-        }
+    if (error) throw error;
 
-        const newResponses = [...responses];
-        newResponses.splice(index, 1);
-        setResponses(newResponses);
-      } catch (err) {
-        console.error("Delete error:", err);
-        setError("An error occurred while deleting the response.");
-      }
-    }
-  };
+    setResponses((prev) => prev.filter((_, i) => i !== index));
+  } catch (err) {
+    console.error("Error deleting response:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
+  
+
+  if (!loading && !userEmail) {
+    navigate("/login");
+  }
   return (
     <div className="flex h-screen bg-gray-900 text-gray-100 relative">
       <div className="fixed top-4 left-4 z-30">
@@ -312,6 +330,11 @@ export default function Chat() {
               </CardBody>
             </Card>
           ))}
+          <div className="bottom-52">
+            <Button isIconOnly onClick={() => navigate("/")}>
+              <FaLongArrowAltLeft />
+            </Button>
+          </div>
         </div>
         <div className="space-y-2">
           {history.map((entry, index) => (
@@ -410,6 +433,7 @@ export default function Chat() {
                               isIconOnly
                               className="bg-gray-700 border-gray-600 cursor-pointer hover:bg-gray-600 rounded-sm"
                               onClick={() => handleDeleteResponse(index)}
+                              disabled={loading}
                             >
                               <MdDelete color="white" size={"2em"} />
                             </Button>

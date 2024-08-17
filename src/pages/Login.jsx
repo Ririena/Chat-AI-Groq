@@ -10,7 +10,8 @@ import {
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../libs/supabase";
-
+import { toast } from "react-toastify";
+import { Bounce } from "react-toastify";
 export default function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -31,6 +32,7 @@ export default function Login() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Validation
     if (!form.email) {
       setErrors((prevErrors) => ({
         ...prevErrors,
@@ -50,41 +52,102 @@ export default function Login() {
     }
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Authenticate the user
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: form.email,
         password: form.password,
       });
 
-      if (error) {
-        console.log(error);
-        alert("Login failed");
-      } else {
-        // Check if the user exists in the 'user' table
-        const { data: userData, error: userError } = await supabase
-          .from("user")
-          .select("*")
-          .eq("email", form.email)
-          .single();
-
-        if (userError) {
-          console.log(userError);
-        } else if (!userData) {
-          // User does not exist, insert them
-          const { error: insertError } = await supabase
-            .from("user")
-            .insert([{ email: form.email }]);
-
-          if (insertError) {
-            console.log(insertError);
-            alert("Failed to create user in the database");
-          }
-        }
-
-        alert("Sukses");
-        navigate("/");
+      if (authError) {
+        console.log(authError);
+        toast.error("Error: " + authError.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Bounce,
+        });
+        setIsSubmitting(false);
+        return;
       }
+
+      // Check if the user exists in the 'user' table
+      const { data: userData, error: userError } = await supabase
+        .from("user")
+        .select("*")
+        .eq("email", form.email)
+        .maybeSingle();
+
+      if (userError) {
+        console.log(userError);
+        toast.error("Error checking user in database: " + userError.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Bounce,
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!userData) {
+        // User does not exist, insert them
+        const { error: insertError } = await supabase
+          .from("user")
+          .insert([{ email: form.email }]);
+
+        if (insertError) {
+          console.log(insertError);
+          toast.error("Failed to create user in the database: " + insertError.message, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+            transition: Bounce,
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      toast.success('Login successful, redirecting...', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+      });
+      navigate("/");
     } catch (error) {
       console.log(error);
+      toast.error("Unexpected error: " + error.message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -104,70 +167,75 @@ export default function Login() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-md w-full p-4"
-      >
-        <Card className="bg-gray-800">
-          <CardHeader className="text-center">
-            <h1 className="text-3xl font-bold text-white">Login</h1>
-          </CardHeader>
-          <Divider />
-          <CardBody>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-6">
-                <Input
-                  clearable
-                  underlined
-                  fullWidth
-                  placeholder="Enter Your Email"
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  color={errors.email ? "error" : "primary"}
-                />
-                {errors.email && (
-                  <p className="text-red-500 text-sm mt-2">{errors.email}</p>
-                )}
-              </div>
-              <div className="mb-6">
-                <Input
-                  clearable
-                  underlined
-                  fullWidth
-                  placeholder="Enter Your Password"
-                  name="password"
-                  type="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  color={errors.password ? "error" : "primary"}
-                />
-                {errors.password && (
-                  <p className="text-red-500 text-sm mt-2">{errors.password}</p>
-                )}
-              </div>
-              <div onClick={handleRegister}>
-                <h1 className="text-white mb-6 cursor-pointer">
-                  Didn't Register Yet?
-                </h1>
-              </div>
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-md w-full p-6  rounded-lg"
+    >
+      <Card className="bg-gray-800 rounded-lg shadow-md p-4">
+        <CardHeader className="text-center mb-4">
+          <h1 className="text-2xl font-bold text-white">Login</h1>
+        </CardHeader>
 
-              <Button
-                type="submit"
-                color="primary"
-                auto
-                className="w-full"
-                disabled={isSubmitting}
+        <Divider className="bg-gray-400 mb-4" />
+
+        <CardBody>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-6">
+              <Input
+                clearable
+                underlined
+                fullWidth
+                placeholder="Enter Your Email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                color={errors.email ? "error" : "primary"}
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
+            </div>
+            <div className="mb-6">
+              <Input
+                clearable
+                underlined
+                fullWidth
+                placeholder="Enter Your Password"
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={handleChange}
+                color={errors.password ? "error" : "primary"}
+              />
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+              )}
+            </div>
+            <div className="text-center mb-4">
+              <p
+                onClick={handleRegister}
+                className="text-white cursor-pointer hover:underline"
               >
-                {isSubmitting ? "Logging in..." : "Login"}
-              </Button>
-            </form>
-          </CardBody>
-        </Card>
-      </motion.div>
-    </div>
+                Didn't Register Yet?
+              </p>
+            </div>
+
+            <Button
+              type="submit"
+              color="primary"
+              auto
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Logging in..." : "Login"}
+            </Button>
+          </form>
+        </CardBody>
+      </Card>
+    </motion.div>
+  </div>
   );
 }

@@ -14,8 +14,7 @@ export const requestToRinaAI = async (content) => {
         content,
       },
     ],
-    max_tokens: 400,
-    model: "mixtral-8x7b-32768",
+    model: "llama3-70b-8192",
   });
   console.log("API Response:", reply); // Tambahkan log untuk memeriksa struktur respons
   // Menambahkan total token ke respons

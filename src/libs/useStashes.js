@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "./supabase";
 import { getUserByEmail, getUserFromTable } from "../libs/UserLibs";
-
+import {toast, Bounce} from 'react-toastify'
 export const useStashes = () => {
   const [stashName, setStashName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -64,6 +64,18 @@ export const useStashes = () => {
         if (error) {
           throw new Error(error.message);
         }
+
+        toast.success('Stash Created, redirecting...', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Bounce,
+        });
 
         const newStashId = data[0].id;
         navigate(`/${newStashId}`);
