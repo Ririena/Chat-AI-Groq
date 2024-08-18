@@ -21,16 +21,16 @@ const CreateStash = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Rina AI</title>
+       <Helmet>
+        <title>Rina AI - Your Personal Assistant</title>
         <link rel="canonical" href="https://rina-ai.vercel.app/" />
         <meta
           name="description"
-          content="Rina AI, Sebuah Aplikasi Chat Assistant Yang Ditenagai oleh Groq dan Model Dari Meta"
+          content="Rina AI is an intuitive chat assistant powered by cutting-edge technology from Groq and Meta. Organize and manage your notes and messages seamlessly."
         />
         <meta
           name="keywords"
-          content="Rina AI, Vercel App, vercel app, Rina AI vercel app, rina ai, rina ai 2, rina ai adlin, rina ai ariena, SMKN 7 Baleendah, rina ai smkn 7 baleendah, AI Rina vercel app, ai rina, "
+          content="Rina AI, AI assistant, chat assistant, note organization, stash management, SMKN 7 Baleendah, AI productivity tools"
         />
       </Helmet>
       <div className="bg-gray-900 text-gray-100 min-h-screen flex flex-col md:flex-row">
