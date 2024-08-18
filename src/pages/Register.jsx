@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../libs/supabase";
 import { toast, Bounce } from "react-toastify";
+import { Helmet } from "react-helmet-async";
 export default function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState({

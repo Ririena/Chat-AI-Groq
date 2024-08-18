@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../libs/supabase";
 import { toast } from "react-toastify";
 import { Bounce } from "react-toastify";
+import { Helmet } from "react-helmet-async";
 export default function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
