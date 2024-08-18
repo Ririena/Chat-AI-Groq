@@ -26,7 +26,7 @@ const CreateStash = () => {
         <link rel="canonical" href="https://rina-ai.vercel.app/" />
         <meta
           name="description"
-          content="Rina is AI Chat Completion That Powered By Groq And Model That Currently Open Sourced By Meta "
+          content="Rina AI, Sebuah Aplikasi Chat Assistant Yang Ditenagai oleh Groq dan Model Dari Meta"
         />
         <meta
           name="keywords"
